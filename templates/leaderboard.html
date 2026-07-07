@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Pew - Global Leaderboard</title>
+    <style>
+        /* Core Layout Styling */
+        body {
+            background-color: #0b0e14; /* Deep tactical dark gray/black */
+            color: #f9f9f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Giant Cosmic Yellow Trophy Watermark Background */
+        .space-trophy-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 650px;
+            height: 650px;
+            background: currentColor;
+            color: rgba(255, 215, 0, 0.035); /* Extremely faint yellow space glow */
+            /* Advanced CSS polygon drawing a massive trophy */
+            clip-path: polygon(15% 0%, 85% 0%, 85% 35%, 68% 55%, 56% 55%, 56% 78%, 78% 78%, 78% 88%, 22% 88%, 22% 78%, 44% 78%, 44% 55%, 32% 55%, 15% 35%);
+            filter: drop-shadow(0 0 80px rgba(255, 215, 0, 0.15));
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        /* Header Sub-Bar (Valorant Top 500 Style) */
+        .leaderboard-header {
+            width: 100%;
+            max-width: 1100px;
+            background-color: #f1f1f1;
+            color: #0f141c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+            margin-top: 50px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .header-title-box {
+            text-align: center;
+        }
+
+        .header-title-box .main-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #76808c;
+            margin: 0;
+        }
+
+        .header-title-box .sub-title {
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #0f141c;
+            margin: 0;
+            line-height: 1.1;
+        }
+
+        /* Column Labels Bar */
+        .table-labels {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #76808c;
+        }
+
+        /* Table Grid Architecture */
+        .leaderboard-list {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px; /* Distinct row spacing gap */
+            margin-bottom: 50px;
+        }
+
+        /* Individual Row Styling */
+        .player-row {
+            display: flex;
+            align-items: center;
+            background-color: #181e29; /* Dark gray rows */
+            border-left: 0px solid transparent;
+            transition: all 0.15s ease-in-out;
+            height: 85px;
+        }
+
+        .player-row:hover {
+            background-color: #222a3a;
+            cursor: pointer;
+        }
+
+        /* Column Width Layout Allocations */
+        .col-rank { width: 12%; text-align: center; display: flex; justify-content: center; align-items: center;}
+        .col-rating { width: 15%; text-align: center; font-weight: 600; color: #cbd3dc;}
+        .col-avatar { width: 10%; display: flex; align-items: center; justify-content: center; }
+        .col-identity { width: 45%; display: flex; flex-direction: column; justify-content: center; }
+        .col-status { width: 18%; text-align: right; padding-right: 40px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; color: #a2a8b3;}
+
+        /* Typography Configurations */
+        .rank-number {
+            font-size: 2.6rem;
+            font-weight: 900;
+            font-style: italic;
+            color: #f9f9f9;
+        }
+
+        .rating-val {
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        .player-username {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .player-subtag {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #76808c;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        /* Procedural CSS Ship Avatar Box */
+        .ship-avatar {
+            width: 45px;
+            height: 45px;
+            background-color: #10151f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Small Procedural Triangle representing your Space Pew Ship */
+        .ship-avatar::after {
+            content: "";
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 18px solid #64b4ff; /* Game ship color blue */
+            position: absolute;
+            top: 12px;
+        }
+
+        /* Champion Custom Styling (Rank #1 Slot Highlights) */
+        .player-row.champion-slot {
+            background-color: #242426; /* Premium highlighted background */
+            height: 120px; /* Thicker row */
+            border-left: 4px solid #ffeb00; /* Gold tag border */
+        }
+
+        .player-row.champion-slot .rank-number {
+            color: #ffeb00; /* Gold text */
+            text-shadow: 0 0 15px rgba(255, 235, 0, 0.3);
+        }
+
+        .player-row.champion-slot .ship-avatar::after {
+            border-bottom-color: #ffeb00; /* Gold ship for Rank 1 */
+        }
+
+        .player-row.champion-slot .ship-avatar {
+            border-color: rgba(255, 235, 0, 0.3);
+            transform: scale(1.15);
+        }
+        
+        .star-icon {
+            color: #ffeb00;
+            margin-left: 8px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="space-trophy-bg"></div>
+
+    <div class="leaderboard-header">
+        <div class="header-title-box">
+            <p class="main-title">SPACE PEW NETWORK</p>
+            <p class="sub-title">TOP PILOTS</p>
+        </div>
+    </div>
+
+    <div class="table-labels">
+        <div class="col-rank" style="text-align: left; padding-left: 40px;">Rank</div>
+        <div class="col-rating">Score Rating</div>
+        <div class="col-avatar">Ship</div>
+        <div class="col-identity" style="padding-left: 10px;">Pilot Identity</div>
+        <div class="col-status">Status</div>
+    </div>
+
+    <div class="leaderboard-list">
+        {% for player in leaderboard %}
+        <div class="player-row {% if loop.first %}champion-slot{% endif %}">
+            
+            <div class="col-rank">
+                <span class="rank-number">{{ loop.index }}</span>
+                {% if loop.first %}<span class="star-icon">★</span>{% endif %}
+            </div>
+
+            <div class="col-rating">
+                <span class="rating-val">{{ player.score }}</span>
+            </div>
+
+            <div class="col-avatar">
+                <div class="ship-avatar"></div>
+            </div>
+
+            <div class="col-identity" style="padding-left: 10px;">
+                <span class="player-username">{{ player.username }}</span>
+                <span class="player-subtag">
+                    {% if loop.first %}SUPREME COMMANDER{% else %}ELITE PILOT{% endif %}
+                </span>
+            </div>
+
+            <div class="col-status">
+                <span>VERIFIED</span>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>
