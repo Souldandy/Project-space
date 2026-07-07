@@ -65,9 +65,25 @@ def submit_score():
 
 @app.route('/leaderboard')
 def leaderboard():
-    # Pull scores up ordered by the highest points matching your game mechanics
     top_matches = Match.query.order_by(Match.score.desc()).limit(10).all()
     return render_template('leaderboard.html', matches=top_matches)
+
+# 🚀 ADDED: This is the missing route that was causing your "Not Found" error!
+@app.route('/match-history/<username>')
+def match_history(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return f"Pilot '{username}' not found.", 404
+    
+    # Fetch all matches played by this specific pilot
+    user_matches = Match.query.filter_by(user_id=user.id).order_by(Match.id.desc()).all()
+    
+    # Simple formatting so you can view it directly in the browser
+    output = f"<h1>Match History for {username}</h1><ul>"
+    for m in user_matches:
+        output += f"<li>Match ID: {m.id} | Score: {m.score}</li>"
+    output += "</ul><br><a href='/leaderboard'>View Global Leaderboard</a>"
+    return output
 
 if __name__ == '__main__':
     app.run(debug=True)
