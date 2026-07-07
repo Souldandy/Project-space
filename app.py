@@ -71,15 +71,17 @@ def leaderboard():
 # 🚀 ADDED: This is the missing route that was causing your "Not Found" error!
 @app.route('/match-history/<username>')
 def match_history(username):
+    # Enforce case-insensitive search or look up directly
     user = User.query.filter_by(username=username).first()
     if not user:
         return f"Pilot '{username}' not found.", 404
     
-    # Fetch all matches played by this specific pilot ordered from newest to oldest
     user_matches = Match.query.filter_by(user_id=user.id).order_by(Match.id.desc()).all()
     
-    # Send the data straight to our clean design layout
-    return render_template('match_history.html', username=username, matches=user_matches)
+    # 🚀 FIX: Convert to uppercase here in Python safely before passing it to HTML
+    display_name = username.upper()
+    
+    return render_template('match_history.html', username=display_name, matches=user_matches)
 
 if __name__ == '__main__':
     app.run(debug=True)
