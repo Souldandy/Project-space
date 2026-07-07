@@ -67,6 +67,29 @@ def submit_score():
 def leaderboard():
     top_matches = Match.query.order_by(Match.score.desc()).limit(10).all()
     return render_template('leaderboard.html', matches=top_matches)
+# 🚀 SECURE LOGIN ENDPOINT FOR PYGAME CLIENT
+@app.route('/api/login', methods=['POST'])
+def login():
+    """Verifies if a pilot username exists in the system database for client authentication."""
+    data = request.get_json() or {}
+    username = data.get('username', '').strip()
+
+    if not username:
+        return jsonify({"status": "error", "message": "Username cannot be empty!"}), 400
+
+    user = User.query.filter_by(username=username).first()
+    
+    if user:
+        return jsonify({
+            "status": "success", 
+            "message": f"Welcome back, Pilot {username}!",
+            "username": user.username
+        }), 200
+    else:
+        return jsonify({
+            "status": "error", 
+            "message": "Pilot profile not found. Please register online first!"
+        }), 404
 
 # 🚀 ADDED: This is the missing route that was causing your "Not Found" error!
 @app.route('/match-history/<username>')
