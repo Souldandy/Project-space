@@ -75,15 +75,11 @@ def match_history(username):
     if not user:
         return f"Pilot '{username}' not found.", 404
     
-    # Fetch all matches played by this specific pilot
+    # Fetch all matches played by this specific pilot ordered from newest to oldest
     user_matches = Match.query.filter_by(user_id=user.id).order_by(Match.id.desc()).all()
     
-    # Simple formatting so you can view it directly in the browser
-    output = f"<h1>Match History for {username}</h1><ul>"
-    for m in user_matches:
-        output += f"<li>Match ID: {m.id} | Score: {m.score}</li>"
-    output += "</ul><br><a href='/leaderboard'>View Global Leaderboard</a>"
-    return output
+    # Send the data straight to our clean design layout
+    return render_template('match_history.html', username=username, matches=user_matches)
 
 if __name__ == '__main__':
     app.run(debug=True)
